@@ -132,7 +132,7 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
     return new_seq, right_seq, flip
 
 
-def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=True):
+def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
     seqs = [s.upper() for s in seqs]
     ref = ref.upper()
 
@@ -162,7 +162,7 @@ def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=True):
     return found, positions, indices
 
 
-def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=True):
+def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
     """
     Improved tilepin using hashmap search to determine whether
     a tile is in certain region of sequences.
@@ -250,7 +250,7 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
         ), "sequences, start and end positions must be the same size"
 
         for seq, start, end in zip(seqs, positions, end_positions):
-            if start > 0 and end > start:
+            if start >= 0 and end > start:
                 truncated_sequences.append(seq[start:end])
             else:
                 truncated_sequences.append("")
@@ -259,7 +259,7 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
 
 
 def viscount(
-    seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=True
+    seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=False
 ):
     """
     Count the number of occurence of tiles in a list of reference sequences.
