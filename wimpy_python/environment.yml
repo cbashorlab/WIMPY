@@ -8,7 +8,6 @@ dependencies:
       - biopython==1.84
       - ipykernel==6.29.5
       - ipython==8.31.0
-      - jedi==0.19.2
       - jupyter-client==8.6.3
       - jupyter-core==5.7.2
       - matplotlib==3.10.0

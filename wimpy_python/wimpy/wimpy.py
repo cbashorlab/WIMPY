@@ -13,6 +13,7 @@ COMPLEMENT = str.maketrans("ATGC", "TACG")
 
 
 def rev_comp(seq: str):
+    """Returns the reverse complement of input sequence."""
     return seq[::-1].translate(COMPLEMENT)
 
 
