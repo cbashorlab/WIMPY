@@ -13,8 +13,27 @@ We recommend running `wimpy` with UNIX-based operating system (Linux/MacOS). For
 
 ### Download Conda and Clone Repository
 
-- Install [Miniconda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install) (recommended) or [Anaconda](https://docs.anaconda.com/anaconda/install/)
-- Clone the repository into your local directory:
+Install [Miniconda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install) (recommended) or [Anaconda](https://docs.anaconda.com/anaconda/install/). For Miniconda you can install it with the following commands:
+
+- Linux/WSL:
+
+    ```bash
+    mkdir -p ~/miniconda3
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    ```
+
+- MacOS (M1 or later):
+
+    ```bash
+    mkdir -p ~/miniconda3
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    ```
+
+Clone the repository into your local directory:
 
 ```bash
 git clone git@github.com:cbashorlab/WIMPY.git
@@ -22,25 +41,25 @@ git clone git@github.com:cbashorlab/WIMPY.git
 
 ### Setting Up Environment and Package
 
-- Open folder `wimpy_python`:
+Open folder `wimpy_python`:
 
 ```bash
 cd ./WIMPY/wimpy_python
 ```
 
-- create `wimpy` virtual environment from the `environment.yml` file:
+create `wimpy` virtual environment from the `environment.yml` file:
 
 ```bash
 conda env create -f environment.yml
 ```
 
-- activate the environment:
+activate the environment:
 
 ```bash
 conda activate wimpy
 ```
 
-- To use `wimpy` as a package, install it with the following command:
+To use `wimpy` as a package, install it with the following command:
 
 ```bash
 pip install -e .
@@ -53,9 +72,15 @@ Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ip
 - Install the latest version of [MATLAB](https://www.mathworks.com/help/install/ug/install-products-with-internet-connection.html)
 - Clone the repository into your local directory:
 
-```bash
-git clone git@github.com:cbashorlab/WIMPY.git
-```
+    ```bash
+    git clone git@github.com:cbashorlab/WIMPY.git
+    ```
 
 - Open folder `wimpy_matlab` in MATLAB
-- Add `wimpy_helper_functions` to path by got to "Current Folder" -> rightclick `wimpy_helper_functions` -> "Add to Path" -> "Selected Folder"
+- Add `wimpy_helper_functions` to path by running the following command on your MATLAB console:
+
+    ```MATLAB
+    addpath('./wimpy_helper_functions')
+    ```
+
+  - Alternatively, you can add `wimpy_helper_functions` to path by going to "Current Folder" -> rightclick `wimpy_helper_functions` -> "Add to Path" -> "Selected Folder"
