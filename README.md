@@ -65,6 +65,8 @@ To use `wimpy` as a package, install it with the following command:
 pip install -e .
 ```
 
+### Using WIMPY
+
 Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ipynb) for an exmple of how to use `wimpy` to process sequencing files in a pipeline.
 
 ## Getting Started - MATLAB
