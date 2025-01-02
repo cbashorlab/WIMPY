@@ -9,7 +9,7 @@ Checkout the full article at [OUP Bioinformatics]()!
 
 ## Getting Started - Python
 
-We recommend running `wimpy` with UNIX-based operating system (Linux/MacOS). For Windows users we recommend to use [Windows Subsystem for Linux (WSL 2)](https://learn.microsoft.com/en-us/windows/wsl/install) for better compatibility (although it should also be compatible with Windows installation of Python and Anaconda, but it's not officially tested).
+We recommend running `wimpy` with UNIX-based operating system (Linux/MacOS). For Windows users we recommend to use [Windows Subsystem for Linux (WSL 2)](https://learn.microsoft.com/en-us/windows/wsl/install) for better compatibility (although it should also be compatible with Windows installation of Python and Anaconda, but it's not officially supported yet).
 
 ### Download Conda and Clone Repository
 
@@ -86,3 +86,19 @@ Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ip
     ```
 
   - Alternatively, you can add `wimpy_helper_functions` to path by going to "Current Folder" -> rightclick `wimpy_helper_functions` -> "Add to Path" -> "Selected Folder"
+
+- Checkout [`example_script_matlab.m`](./wimpy_matlab/example_script_matlab.m) for an exmple of how to use `wimpy` to process sequencing files in a pipeline.
+
+## WIMPY Functions
+
+### `bowtile` - [description]
+
+### `chophat` - [description]
+
+### `fastqall` - [description]
+
+### `viscount` - [description]
+
+### `tilepin` - [description]
+
+### `tilepin_v2` (Python version only) - [description]
