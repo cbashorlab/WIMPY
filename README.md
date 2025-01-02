@@ -58,4 +58,4 @@ git clone git@github.com:cbashorlab/WIMPY.git
 ```
 
 - Open folder `wimpy_matlab` in MATLAB
-- Add `wimpy_helper_functions` to path in Workspace by rightclick `wimpy_helper_functions` -> "Add to Path" -> "Selected Folder"
+- Add `wimpy_helper_functions` to path by got to "Current Folder" -> rightclick `wimpy_helper_functions` -> "Add to Path" -> "Selected Folder"
