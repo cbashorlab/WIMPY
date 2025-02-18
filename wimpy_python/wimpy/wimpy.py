@@ -1,11 +1,9 @@
 from Bio import SeqIO
-from Bio.Seq import Seq
 from os import path
 from tqdm import tqdm
-import glob
+from glob import glob
 import re
 import numpy as np
-from typing import List, Tuple
 from os import PathLike
 
 
@@ -17,13 +15,20 @@ def rev_comp(seq: str):
     return seq[::-1].translate(COMPLEMENT)
 
 
-def fastqall(directory: PathLike = "./", prefix: str = ""):
+def fastqall(
+    directory: PathLike = "./",
+    prefix: str = "",
+    idx_start: int = None,
+    idx_end: int = None,
+):
     """read all fastq files in the given directory with given prefix. returns
     all the quality scores, lengths, and sequences as a list
 
     Args:
         file_directory (str, optional): the location of files Defaults to './'
         prefix (str, optional): the specified prefix. Defaults to ''.
+        idx_start: start index of the file names. Defaults to None.
+        idx_end: end index of the file names. Defaults to None.
 
     Returns:
         q_scores: all the quality scores
@@ -41,9 +46,8 @@ def fastqall(directory: PathLike = "./", prefix: str = ""):
     seqs = []
 
     # read all files and store q_scores, lens, and seqs
-    for file in tqdm(
-        glob.glob(path.join(directory, f"{prefix}*.fastq")), desc="reading fastq files"
-    ):
+    file_names = sorted(glob(path.join(directory, f"{prefix}*.fastq")))
+    for file in tqdm(file_names[idx_start:idx_end], desc="reading fastq files"):
         for read in SeqIO.parse(file, "fastq"):
             q_scores.append(read.letter_annotations["phred_quality"])
             lengths.append(len(read))
@@ -79,7 +83,8 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
     Returns:
         new_seq (list): valid sequences that are aligned to start with ref seq
         right_seq (list): valid sequences
-        flip (list): whether the match is on fwd strand (0), rev strand (1), or no match
+        flip (list): whether the match is on fwd strand (0), rev 
+        strand (1), or no match (-1)
     """
 
     # convert to upper case
@@ -196,7 +201,7 @@ def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
 
     num_matches = np.sum(matches, axis=1)
     match_index = np.zeros_like(num_matches) - 1
-    
+
     is_above_thresh = (num_matches / len(ref)) > thresh
     match_index[is_above_thresh] = np.array(
         [np.median(np.nonzero(match)) for match in matches[is_above_thresh]]
