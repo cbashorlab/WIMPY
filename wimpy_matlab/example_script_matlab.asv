@@ -129,16 +129,14 @@ synTF_variants = [variants_synTF_prom variants_AD variants_IDR variants_ZF varia
 
 %% Calculate orientation
 
-%based on location of GFP and mRuby
-variants_orientation = ones(size(reads_correct, 1), 1);
-variants_orientation(positions2(:, 2) < positions2(:, 4)) = 2;
+
 
 %% Sum all synTF and reporter indices to create full list of 100k identified circuits
-all_100k_variants = [synTF_variants reporter_variants variants_orientation];
+all_100k_variants = [synTF_variants reporter_variants];
 %remove all rows containing zero or -1
 all_100k_variants(any(all_100k_variants < 1,2),:) = [];
 %library_100k = all_100k_variants(:,1) + 4*(all_100k_variants(:,2)-1) + 16*(all_100k_variants(:,3)-1) + 80*(all_100k_variants(:,4)-1) + 240*(all_100k_variants(:,5)-1) + 2880*(all_100k_variants(:,6)-1) + 11520*(all_100k_variants(:,7)-1) +  34560*(all_100k_variants(:,8)-1);
-library_100k = (all_100k_variants - [0 ones(1, 9)]).*[1 4 16 64 192 768 2304 9216 27648 82944];
+library_100k = (all_100k_variants - [0 ones(1, 7)]).*[1 4 16 64 192 768 2304 9216 27648];
 
 %% Barcoding & Barcoded AssTable Generation
 tregion_BFP = chophat(reads_correct, positions2(:, 5), 1000, 1);
