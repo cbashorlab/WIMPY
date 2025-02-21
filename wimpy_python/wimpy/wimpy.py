@@ -1,10 +1,12 @@
-from Bio import SeqIO
+from Bio import SeqIO, Align
+from Bio.Seq import Seq
 from os import path
 from tqdm import tqdm
 from glob import glob
 import re
 import numpy as np
 from os import PathLike
+from scipy.stats import gaussian_kde
 
 
 COMPLEMENT = str.maketrans("ATGC", "TACG")
@@ -64,7 +66,7 @@ def to_tiles(seq: str, tile_len: int = 10):
         tile_len (int, optional): Length of tile. Defaults to 10.
 
     Returns:
-        np.array(str) : a tuple of tiles
+        np.array(str) : an array of tiles
     """
 
     return np.array([seq[i : i + tile_len] for i in range(len(seq) - tile_len + 1)])
@@ -83,7 +85,7 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
     Returns:
         new_seq (list): valid sequences that are aligned to start with ref seq
         right_seq (list): valid sequences
-        flip (list): whether the match is on fwd strand (0), rev 
+        flip (list): whether the match is on fwd strand (0), rev
         strand (1), or no match (-1)
     """
 
@@ -311,3 +313,137 @@ def viscount(
             )
 
     return match_ratios, match_counts, conf_matrix
+
+
+def FASTar(seqs, ref, step, bw):
+    #! not final, to be updated after matlab script update
+    """
+    Python equivalent of the FASTar function in MATLAB.
+
+    Args:
+        pregions (list[str]): list of pre-regions to search within.
+        ref (str): reference sequence.
+        step (int): step size for sliding window.
+        bw (float): bandwidth for kernel density estimation.
+
+    Returns:
+        nums (np.array): number of local maxima found in each pre-region.
+        locs (list): list of locations of local maxima for each pre-region.
+    """
+    nums = np.zeros(len(seqs))
+    locs = [None] * len(pregions)
+
+    for j, x in enumerate(pregions):
+        a1 = []
+        if "X" not in x:
+            for i in range(len(ref) - step):
+                a = ref[i : i + step]
+                y = [m.start() for m in re.finditer(a, x)]
+                if y:
+                    a1.extend(y)
+            if a1:
+                kde = gaussian_kde(np.unique(a1), bw_method=bw)
+                density = kde(np.unique(a1))
+                a1 = np.unique(a1)[
+                    np.r_[True, density[1:] > density[:-1]]
+                    & np.r_[density[:-1] > density[1:], True]
+                ]
+                locs[j] = a1
+                nums[j] = len(a1)
+
+    return nums, locs
+
+
+def barcoat(seqs, preset="BBA", barcode_construct=None, alinger=None):
+    """
+    Aligns sequences to a barcode construct using a preset or custom aligner.
+    Parameters:
+    seqs (list of str): List of sequences to be aligned.
+    preset (str, optional): Preset configuration for barcode construct and aligner. 
+                            Options are "BBA", "DDC", or None. Default is "BBA".
+    barcode_construct (Bio.Seq.Seq, optional): Custom barcode construct sequence. 
+                                               Required if preset is None.
+    aligner (Bio.Align.PairwiseAligner, optional): Custom aligner object. 
+                                                   Required if preset is None.
+    Returns:
+    tuple: A tuple containing:
+        - barcode (numpy.ndarray): Array of aligned barcode sequences.
+        - position (numpy.ndarray): Array of starting positions of alignments.
+        - length (numpy.ndarray): Array of lengths of alignments.
+        - score (numpy.ndarray): Array of alignment scores.
+    Raises:
+    ValueError: If preset is None and either barcode_construct or aligner is not provided.
+    Example:
+    ```
+    >>> from Bio.Seq import Seq
+    >>> from Bio import Align
+    >>> import numpy as np
+    >>> seqs = ["ATTATTATTATTATTATTA", "CTTCTTCTTCTTCTTCTTC"]
+    >>> barcode_construct = Seq("ATTATTATTATTATTATTA")
+    >>> aligner = Align.PairwiseAligner()
+    >>> aligner.mode = "local"
+    >>> aligner.substitution_matrix = Align.substitution_matrices.Array(
+    ...     data=np.array(
+    ...         [[5, -5, -5, -5], [-5, 5, 5, 5], [-5, 5, 5, 5], [-5, 5, 5, 5]]
+    ...     ),
+    ...     alphabet="ATGC",
+    ... )
+    >>> aligner.open_gap_score = -8
+    >>> aligner.extend_gap_score = -8
+    >>> barcoat(seqs, preset=None, barcode_construct=barcode_construct, aligner=aligner)
+    ```
+    """
+
+    # load barcode structure and substitution matrix
+    if preset == "BBA":
+        barcode_construct = Seq("ATTATTATTATTATTATTA")
+
+        aligner = Align.PairwiseAligner()
+        aligner.mode = "local"
+        aligner.substitution_matrix = Align.substitution_matrices.Array(
+            data=np.array(
+                [[5, -5, -5, -5], [-5, 5, 5, 5], [-5, 5, 5, 5], [-5, 5, 5, 5]]
+            ),
+            alphabet="ATGC",
+        )
+        aligner.open_gap_score = -8
+        aligner.extend_gap_score = -8
+
+    elif preset == "DDC":
+        barcode_construct = Seq("CTTCTTCTTCTTCTTCTTC")
+
+        aligner = Align.PairwiseAligner()
+        aligner.mode = "local"
+        aligner.substitution_matrix = Align.substitution_matrices.Array(
+            data=np.array(
+                [[5, 5, 5, -5], [5, 5, 5, -5], [5, 5, 5, -5], [-5, -5, -5, 5]]
+            ),
+            alphabet="ATGC",
+        )
+        aligner.open_gap_score = -8
+        aligner.extend_gap_score = -8
+
+    elif preset is None and (barcode_construct is None or aligner is None):
+        raise ValueError(
+            "barcode_construct and aligner must be provided if preset is None"
+        )
+
+    # else: use the provided barcode_construct and aligner
+
+    num_seqs = len(seqs)
+    barcode = np.empty(num_seqs, dtype="<U32")
+    position = np.zeros(num_seqs, dtype=np.int32) - 1
+    length = np.zeros(num_seqs, dtype=np.int32) - 1
+    score = np.zeros(num_seqs, dtype=np.int32) - 1
+
+    for i, seq in enumerate(tqdm(seqs, desc="searching barcode using alignment")):
+        if len(seq) <= 0:
+            continue
+
+        alignment = aligner.align(seq, barcode_construct)[0]
+        barcode[i] = alignment[0]
+        position[i] = int(alignment.indices[0, 0])
+        length[i] = alignment.length
+        score[i] = alignment.score
+
+    return barcode, position, length, score

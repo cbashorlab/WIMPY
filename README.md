@@ -89,16 +89,145 @@ Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ip
 
 - Checkout [`example_script_matlab.m`](./wimpy_matlab/example_script_matlab.m) for an exmple of how to use `wimpy` to process sequencing files in a pipeline.
 
-## WIMPY Functions
+## WIMPY Functions Documentation
 
-### `bowtile` - [description]
+***⚠️ Work in Progress - making edits to the functions at the moment, documentation may be inconsistent. Documentation will be updated once edit on functions are finalized***
 
-### `chophat` - [description]
+### `rev_comp(seq: str)`
 
-### `fastqall` - [description]
+Returns the reverse complement of input sequence.
 
-### `viscount` - [description]
+### `fastqall(directory: PathLike = "./", prefix: str = "", idx_start: int = None, idx_end: int = None)`
 
-### `tilepin` - [description]
+Reads all fastq files in the given directory with the given prefix. Returns all the quality scores, lengths, and sequences as a list.
 
-### `tilepin_v2` (Python version only) - [description]
+**Args:**
+
+- `directory` (str, optional): The location of files. Defaults to './'.
+- `prefix` (str, optional): The specified prefix. Defaults to ''.
+- `idx_start`: Start index of the file names. Defaults to None.
+- `idx_end`: End index of the file names. Defaults to None.
+
+**Returns:**
+
+- `q_scores`: All the quality scores.
+- `lengths`: Lengths of all reads.
+- `seqs`: Sequence of all the reads.
+
+### `to_tiles(seq: str, tile_len: int = 10)`
+
+Breaks the sequence into tiles, given the tile length.
+
+**Args:**
+
+- `seq` (str): The sequence to break.
+- `tile_len` (int, optional): Length of tile. Defaults to 10.
+
+**Returns:**
+
+- `np.array(str)`: A tuple of tiles.
+
+### `bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100)`
+
+Uses tiling to determine the occurrence of a sequence in a list of reads.
+
+**Args:**
+
+- `seqs` (list): A list of reads to be tiled to.
+- `ref` (str): The reference sequence.
+- `thresh` (float): Threshold to determine whether the tiling is valid.
+- `tile_len` (int, optional): Length of tile. Defaults to 10.
+- `max_len` (int, optional): Maximum length of ref seq. Defaults to 100.
+
+**Returns:**
+
+- `new_seq` (list): Valid sequences that are aligned to start with ref seq.
+- `right_seq` (list): Valid sequences.
+- `flip` (list): Whether the match is on fwd strand (0), rev strand (1), or no match (-1).
+
+### `tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False)`
+
+Tiles the sequences and finds matches.
+
+**Args:**
+
+- `seqs` (list): Input sequences.
+- `ref` (str): Reference sequence.
+- `thresh` (float, optional): Threshold for valid tiling. Defaults to 0.03.
+- `tile_len` (int, optional): Length of tile. Defaults to 10.
+- `verbose` (bool, optional): Print progress. Defaults to False.
+
+**Returns:**
+
+- `found`: Number of tiles found.
+- `positions`: Positions of tiles.
+- `indices`: Indices of tiles.
+
+### `tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False)`
+
+Improved tilepin using hashmap search to determine whether a tile is in certain region of sequences.
+
+**Args:**
+
+- `seqs` (list[str]): Input sequences to search.
+- `ref` (str): The reference sequence.
+- `thresh` (float, optional): Threshold to determine if the sequence contains the reference sequence. Defaults to 0.03.
+- `tile_len` (int, optional): Length of tile. Defaults to 10.
+- `verbose` (bool, optional): Print out progress. Defaults to True.
+
+**Returns:**
+
+- `num_matches`: The number of tiles matched the sequence.
+- `match_index`: The index where the reference sequence is located.
+- `matches`: The list of all indices where match is found.
+
+### `chophat(seqs, positions, end_positions=None, max_length=None, retain=True)`
+
+Chops the sequence to keep only the regions of interest.
+
+**Args:**
+
+- `seqs` (list[str]): Sequences to be processed.
+- `positions` (np.array[int]): Start position for truncation.
+- `end_positions` (np.array[int], optional): End position for truncation. Defaults to None.
+- `max_length` (int, optional): The max length of truncated sequence. Defaults to None.
+- `retain` (bool, optional): Retain the sequence if the start position to the end of string is smaller than max_length. Defaults to True.
+
+**Returns:**
+
+- `list[str]`: The truncated sequences.
+
+### `viscount(seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=False)`
+
+Counts the number of occurrences of tiles in a list of reference sequences. Constructs a confusion matrix of index assignments if requested.
+
+**Args:**
+
+- `seqs` (list[str]): Sequences to be processed.
+- `ref_seqs` (list[str]): List of reference sequences.
+- `thresh` (int): Threshold for a valid occurrence in confusion matrix.
+- `return_confusion_matrix` (bool, optional): Construct the confusion matrix or not. Defaults to True.
+- `tile_len` (int, optional): Length of tiles. Defaults to 10.
+- `verbose` (bool, optional): Print out progress. Defaults to True.
+
+**Returns:**
+
+- `match_ratios`: The proportion of reference tiles that get assigned to the sequences.
+- `match_counts`: The raw count of number of tiles get assigned to the sequences.
+- `conf_matrix` (optional): Confusion matrix for the assignment.
+
+### `FASTar(pregions, ref, step, bw)`
+
+Python equivalent of the FASTar function in MATLAB.
+
+**Args:**
+
+- `pregions` (list[str]): List of pre-regions to search within.
+- `ref` (str): Reference sequence.
+- `step` (int): Step size for sliding window.
+- `bw` (float): Bandwidth for kernel density estimation.
+
+**Returns:**
+
+- `nums` (np.array): Number of local maxima found in each pre-region.
+- `locs` (list): List of locations of local maxima for each pre-region.
