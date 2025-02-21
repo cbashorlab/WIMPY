@@ -1,7 +1,19 @@
 function [FP_tiles, FP_tiles_nonnorm, conf_chart] = viscount(reads_correct,step,FP, thresh, confchart)
-%UNTITLED Summary of this function goes here
-%   Inputs = sequence maps for each part
-%   Outputs = number of tiles identified for each map and read
+% viscount - Counts the number of tiles identified for each map and read
+%
+% Syntax: [FP_tiles, FP_tiles_nonnorm, conf_chart] = viscount(reads_correct, step, FP, thresh, confchart)
+%
+% Inputs:
+%    reads_correct - Cell array of sequences to be analyzed
+%    step - Integer, the step size for tiling
+%    FP - Cell array of feature patterns to be matched
+%    thresh - Threshold value for confidence chart
+%    confchart - Character, 'T' to generate confidence chart, otherwise no chart
+%
+% Outputs:
+%    FP_tiles - Normalized count of tiles identified for each map and read
+%    FP_tiles_nonnorm - Non-normalized count of tiles identified for each map and read
+%    conf_chart - Confidence chart matrix if confchart is 'T', otherwise empty
 
 s = ' ';
 disp(['Viscounting for', s, inputname(3)])

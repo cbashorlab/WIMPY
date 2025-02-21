@@ -1,6 +1,21 @@
 function [new_seq, right_seq, flip, positions, protiles_F, protiles_R] = bowtile(q,ref,thresh)
-% WELCOME to bowTile
-% Detailed explanation goes here
+% BOWTILE - Aligns query sequences to a reference sequence and determines the best orientation.
+%
+%   [NEW_SEQ, RIGHT_SEQ, FLIP, POSITIONS, PROTILES_F, PROTILES_R] = BOWTILE(Q, REF, THRESH)
+%   aligns the sequences in cell array Q to the reference sequence REF using a threshold THRESH.
+%
+%   Inputs:
+%       Q       - Cell array of query sequences to be aligned.
+%       REF     - Reference sequence to which the query sequences are aligned.
+%       THRESH  - Threshold value to determine the best orientation of the query sequences.
+%
+%   Outputs:
+%       NEW_SEQ     - Cell array of re-arranged query sequences based on alignment.
+%       RIGHT_SEQ   - Cell array of query sequences in the correct orientation.
+%       FLIP        - Array indicating the orientation of each query sequence (1 for reverse, 0 for forward, -1 for ambiguous).
+%       POSITIONS   - Array of positions where the query sequences align to the reference sequence (forward and reverse).
+%       PROTILES_F  - Cell array of positions of forward alignments for each query sequence.
+%       PROTILES_R  - Cell array of positions of reverse alignments for each query sequence.
 
 s = ' ';
 disp(['Bowtiling to', s, inputname(2)])

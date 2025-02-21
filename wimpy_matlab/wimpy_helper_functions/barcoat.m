@@ -1,4 +1,26 @@
 function [barcodes1_correct, barcodes2_correct, bc1, bc2] = barcoat(tregion_BFP, method)
+% barcoat - Aligns or corrects barcodes based on the specified method.
+%
+% Syntax: [barcodes1_correct, barcodes2_correct, bc1, bc2] = barcoat(tregion_BFP, method)
+%
+% Inputs:
+%    tregion_BFP - Cell array of sequences to be analyzed.
+%    method - String specifying the method to use ('scar' or 'align').
+%
+% Outputs:
+%    barcodes1_correct - Cell array of corrected barcodes for BC1.
+%    barcodes2_correct - Cell array of corrected barcodes for BC2.
+%    bc1 - Cell array of aligned barcodes for BC1.
+%    bc2 - Cell array of aligned barcodes for BC2.
+%
+% Example:
+%    [barcodes1_correct, barcodes2_correct, bc1, bc2] = barcoat(tregion_BFP, 'align')
+%
+% Other m-files required: none
+% Subfunctions: none
+% MAT-files required: Blosum62_BC1.xlsx, Blosum62_BC2.xlsx
+%
+% See also: swalign
 
 if sum(method == 'scar') == 4
     
