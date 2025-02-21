@@ -2,8 +2,13 @@ name: wimpy
 channels:
   - defaults
 dependencies:
-  - python=3.12.8
-  - setuptools=75.1.0
+  - ca-certificates=2024.12.31
+  - expat=2.6.4
+  - pip=25.0
+  - python=3.12.9
+  - setuptools=75.8.0
+  - tzdata=2025a
+  - wheel=0.45.1
   - pip:
       - biopython==1.84
       - ipykernel==6.29.5
@@ -15,6 +20,5 @@ dependencies:
       - numpy==2.2.0
       - openpyxl==3.1.5
       - pandas==2.2.3
-      - pip==24.3.1
       - scipy==1.15.2
       - tqdm==4.67.1
