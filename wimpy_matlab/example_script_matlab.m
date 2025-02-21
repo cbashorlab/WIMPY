@@ -25,15 +25,19 @@ ZF_parts = {WT C1_WT C1_6x};
 [~, l, seq] = fastqall('../example_fastq', 'fastq');
 %Filter based on read length
 seq = seq(l > 9500 & l < 15000); l = l(l > 9500 & l < 15000);
+
+%Index to Puromycin using bowtile
 thresh = 0.03;
-[new_seq, ~, ~, ~, ~, ~] = bowtile(seq,Puro,thresh);
+[new_seq, ~, ~, ~, ~, ~] = bowtile(seq, Puro, thresh);
+%Remove any reads that didn't align to Puro (marked as 'X' in new_seq)
 reads_correct = new_seq(~contains(new_seq, 'X')); l_readscorrect = l(~contains(new_seq, 'X'));
+
 %% REPORTER Identification
-% Locate A4, GFP, and Minimal Promoter region via TILING
-[~, positionsGFP, ~] = tilepin(reads_correct, GFP(end-100:end), thresh, 'F');
-[~, positionsmRuby, ~] = tilepin(reads_correct, mRuby(end-100:end), thresh, 'F');
+% Locate A4, GFP, constant region upstream of pMin, BFP and mRuby via tilepin
 [~, positionsA4, ~] = tilepin(reads_correct, A4, thresh, 'F');
+[~, positionsGFP, ~] = tilepin(reads_correct, GFP(end-100:end), thresh, 'F');
 [~, positionsminP, ~] = tilepin(reads_correct, minP, thresh, 'F');
+[~, positionsmRuby, ~] = tilepin(reads_correct, mRuby(end-100:end), thresh, 'F');
 [~, positionsBFP, ~] = tilepin(reads_correct, BFP, thresh, 'F');
 
 positions2 = floor([positionsA4, positionsGFP, positionsminP, positionsmRuby, positionsBFP]);
@@ -46,13 +50,14 @@ tregions = chophat(reads_correct, positions2(:, 2), 2000, 1);
 %Minimal Promoter
 [minP_variants_scaled, minP_variants, minPconf] = viscount(pregions, 6, minP_100k, 0.2, 'T');
 
-[~,minP_variants_scaled(:,4)] = max(minP_variants_scaled');
+[~,minP_variants_scaled(:,4)] = max(minP_variants_scaled, [], 2);
 minP_variants_scaled((sum(minP_variants_scaled(:,1:3),2) < 0.2),4) = 0;
 
-%Number of Binding sites (based on distance between landmarks 2 & 3
+%Number of Binding sites using FASTar
 BS10_1 = upper('cGGCGTAGCCGATGTCGCGc');
 [variants_bs, ~] = FASTar(pregions, BS10_1, 6, 8);
 
+%Everything between
 variants_bs(variants_bs > 6.9 & variants_bs < 9.1) = 8;
 variants_bs(variants_bs > 9.2 & variants_bs < 14) = 12;
 variants_bs(variants_bs > 3.9 & variants_bs < 6.1) = 4;

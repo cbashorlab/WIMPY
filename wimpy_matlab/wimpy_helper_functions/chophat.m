@@ -6,7 +6,7 @@ out = cell(size(reads_correct));
 for i = 1:length(reads_correct)
         a = cell2mat(reads_correct(i));
         b = positions(i,:);
-  if length(b) == 1
+  if isscalar(b)
       if b > 0
           if truncationcriteria > 0
               if b > 0 && length(a(b:end)) > truncationcriteria 
