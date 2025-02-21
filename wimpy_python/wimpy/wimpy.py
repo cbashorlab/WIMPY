@@ -1,7 +1,7 @@
 from Bio import SeqIO, Align
 from Bio.Seq import Seq
 from os import path
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from glob import glob
 import re
 import numpy as np

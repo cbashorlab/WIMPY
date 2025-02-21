@@ -13,8 +13,8 @@ dependencies:
       - biopython==1.84
       - ipykernel==6.29.5
       - ipython==8.31.0
-      - jupyter-client==8.6.3
-      - jupyter-core==5.7.2
+      - ipywidgets==8.1.5
+      - jupyter==1.1.1
       - matplotlib==3.10.0
       - matplotlib-inline==0.1.7
       - numpy==2.2.0
