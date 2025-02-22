@@ -91,143 +91,38 @@ Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ip
 
 ## WIMPY Functions Documentation
 
-***⚠️ Work in Progress - making edits to the functions at the moment, documentation may be inconsistent. Documentation will be updated once edit on functions are finalized***
+### `Fastqall`
 
-### `rev_comp(seq: str)`
+Combines reads from all fastq files in the directory, which are by default split into 4000-read blocks by Guppy/Dorado, into a single cell array while discarding sequence headers and information about per-base quality scores. The output from this step is a n-by-1 cell array containing all the reads, where n is the read depth obtained from the nanopore run.
 
-Returns the reverse complement of input sequence.
+### `Bowtiles`
 
-### `fastqall(directory: PathLike = "./", prefix: str = "", idx_start: int = None, idx_end: int = None)`
+Indexes the reads and tethers them to a common reference point in the plasmid library, such as the C-terminus of the puroR cassette, which should be contained in all level-3 plasmid assemblies. Reads in which puroR is not detected are discarded at this stage, while on-target reads are reconstructed so the reference sequence is located on the 5’ end of the top strand (reads from the opposite orientation are reverse complemented). The output of Bowtiles is a n•1 cell array containing all reads indexed to PuroR.
 
-Reads all fastq files in the given directory with the given prefix. Returns all the quality scores, lengths, and sequences as a list.
+### `Tilepin`
 
-**Args:**
+Identifies library-specific constant landmarks in each read using a containment search (see Methods) and indexes the locations of these landmarks for later use. Examples of invariant genetic landmarks include fluorescent reporters, such as mRuby (384-member library, Fig. 2A), the Ert2 domain (166k member library, Fig. 3A), or the BFP fluorescent protein in the barcoded EU used in both libraries. The inputs to Tilepin are the cell array containing all the reads, and DNA sequences representing identifiable landmarks (i.e., mRuby and BFP). The output is an n•2 integer array where n is the read depth on the library, and the columns contain the position of mRuby and BFP respectively.
 
-- `directory` (str, optional): The location of files. Defaults to './'.
-- `prefix` (str, optional): The specified prefix. Defaults to ''.
-- `idx_start`: Start index of the file names. Defaults to None.
-- `idx_end`: End index of the file names. Defaults to None.
+### `Chophat`
 
-**Returns:**
+Truncates reads based on landmark coordinates identified by Tilepin, yielding a n \* (m + 1) cell array, where n is the total number of reads and m is the number of landmarks (e.g., mRuby, Ert2 domain, BFP etc.). The inputs to Chophat are the n•1 cell array containing all nanopore reads (Bowtiles output) and the n•m integer array specifying landmark indices within each read (Tilepin output). The output is an n \* (m + 1) cell array containing each nanopore read (n) sub-divided into sections that correspond to the distance from one landmark (m) to the next (m+1). In the case of all libraries used in this study, the final column of the Chophat output array for each read contains the region downstream of the BFP EU, which runs from genetic landmark m (BFP) to m+1 (end of the read). The outputs from Chophat are sent in parallel to Viscount and Barcoat for identity assignment and barcode sequence determination, respectively.
 
-- `q_scores`: All the quality scores.
-- `lengths`: Lengths of all reads.
-- `seqs`: Sequence of all the reads.
+### `Viscount`
 
-### `to_tiles(seq: str, tile_len: int = 10)`
+uses a fast, highly specific containment search method to query a defined sub-section of each read against a shortlist of genetic part sequences to make part identity assignments. The inputs to Viscount are columns 1 through m of the n•[m + 1] cell array output from Chophat (i.e., all sequence sub-sections other than the region downstream of BFP) and a reference cell array containing the sequences of all possible genetic parts within a category (e.g., all 8 promoters used in the 384-member library) (Fig. 2A). The containment search works as follows:
 
-Breaks the sequence into tiles, given the tile length.
+1. each reference genetic part sequence is split into tiles in a user-defined manner. For this study we used tile lengths of 6 bp with a 1 bp stride for Kozak sequences, and tile lengths of 10 bp for all other parts;
+2. All reads are queried for all tiles for every reference sequence using a binary containment search (Matlab function contains);
+3. The number of tiles contained in each read is counted for all reference sequences;
+4. The number of tiles assigned to each read is normalized by the number of reference tiles to account for variable reference sequence lengths, yielding the fraction of tiles contained in each read for each reference sequence;
+5. If a read contains more tiles than the specified threshold (user defined, typically ~3-5%) for a given reference sequence, it is assigned a part identity. Reads can receive more than one part identity by meeting the threshold for multiple parts within the category; such reads are referred to as “confused” reads and are potentially a product of noisy sequencing data.
 
-**Args:**
+The outputs from this process are part assignments for each read found to unambiguously contain just one part from the set, and a confusion matrix showing the number of reads that were assigned to one part (diagonal of the matrix) and two parts (off-diagonal elements). Within the part assignment output, reads in which a part could not be identified are assigned “0”, while confused reads are assigned “-1”. All 0 and -1 reads identified by this analysis are subsequently discarded.
 
-- `seq` (str): The sequence to break.
-- `tile_len` (int, optional): Length of tile. Defaults to 10.
+### `FASTar`
 
-**Returns:**
+uses the same container search method as viscount (mentioned above), and operates on the same input cell array, but is used in instances where multiple copies of an identical sequence are present, such as arrays of binding sites, and the goal is to capture their location (relative to each other or absolute location in the read). The function runs identically to viscount, querying reads from the cell array output from chophat and performing a containment search for tiles, and records the counts as well as the locations of the tiles along a read. This is then followed by running a kernel density filter on the locations of the tiles along each read with a user defined bandwidth, which is intended to be set based on the size of the part as well as relative expected distance between the parts. A search for local maxima of the kernel density output then returns the number of such identical parts (e.g., BMs), and their relative locations along the read. The outputs from this function are an array that contains the number of peaks identified in each read in the array, and a cell array that contains the location of each of the peaks for each read. In the two-input dual inducible synTF library, FASTar is used to identify the numbers and relative locations of two different binding site sequences (the cognate binding site for both zinc finger TFs), and the pattern is determined based on the location of these binding sites (alternating binding sites, or clustered binding sites). Any reads in which the part could not be identified are assigned “0” in both the location and count outputs by this analysis, and are subsequently discarded.
 
-- `np.array(str)`: A tuple of tiles.
+### `Barcoat`
 
-### `bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100)`
-
-Uses tiling to determine the occurrence of a sequence in a list of reads.
-
-**Args:**
-
-- `seqs` (list): A list of reads to be tiled to.
-- `ref` (str): The reference sequence.
-- `thresh` (float): Threshold to determine whether the tiling is valid.
-- `tile_len` (int, optional): Length of tile. Defaults to 10.
-- `max_len` (int, optional): Maximum length of ref seq. Defaults to 100.
-
-**Returns:**
-
-- `new_seq` (list): Valid sequences that are aligned to start with ref seq.
-- `right_seq` (list): Valid sequences.
-- `flip` (list): Whether the match is on fwd strand (0), rev strand (1), or no match (-1).
-
-### `tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False)`
-
-Tiles the sequences and finds matches.
-
-**Args:**
-
-- `seqs` (list): Input sequences.
-- `ref` (str): Reference sequence.
-- `thresh` (float, optional): Threshold for valid tiling. Defaults to 0.03.
-- `tile_len` (int, optional): Length of tile. Defaults to 10.
-- `verbose` (bool, optional): Print progress. Defaults to False.
-
-**Returns:**
-
-- `found`: Number of tiles found.
-- `positions`: Positions of tiles.
-- `indices`: Indices of tiles.
-
-### `tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False)`
-
-Improved tilepin using hashmap search to determine whether a tile is in certain region of sequences.
-
-**Args:**
-
-- `seqs` (list[str]): Input sequences to search.
-- `ref` (str): The reference sequence.
-- `thresh` (float, optional): Threshold to determine if the sequence contains the reference sequence. Defaults to 0.03.
-- `tile_len` (int, optional): Length of tile. Defaults to 10.
-- `verbose` (bool, optional): Print out progress. Defaults to True.
-
-**Returns:**
-
-- `num_matches`: The number of tiles matched the sequence.
-- `match_index`: The index where the reference sequence is located.
-- `matches`: The list of all indices where match is found.
-
-### `chophat(seqs, positions, end_positions=None, max_length=None, retain=True)`
-
-Chops the sequence to keep only the regions of interest.
-
-**Args:**
-
-- `seqs` (list[str]): Sequences to be processed.
-- `positions` (np.array[int]): Start position for truncation.
-- `end_positions` (np.array[int], optional): End position for truncation. Defaults to None.
-- `max_length` (int, optional): The max length of truncated sequence. Defaults to None.
-- `retain` (bool, optional): Retain the sequence if the start position to the end of string is smaller than max_length. Defaults to True.
-
-**Returns:**
-
-- `list[str]`: The truncated sequences.
-
-### `viscount(seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=False)`
-
-Counts the number of occurrences of tiles in a list of reference sequences. Constructs a confusion matrix of index assignments if requested.
-
-**Args:**
-
-- `seqs` (list[str]): Sequences to be processed.
-- `ref_seqs` (list[str]): List of reference sequences.
-- `thresh` (int): Threshold for a valid occurrence in confusion matrix.
-- `return_confusion_matrix` (bool, optional): Construct the confusion matrix or not. Defaults to True.
-- `tile_len` (int, optional): Length of tiles. Defaults to 10.
-- `verbose` (bool, optional): Print out progress. Defaults to True.
-
-**Returns:**
-
-- `match_ratios`: The proportion of reference tiles that get assigned to the sequences.
-- `match_counts`: The raw count of number of tiles get assigned to the sequences.
-- `conf_matrix` (optional): Confusion matrix for the assignment.
-
-### `FASTar(pregions, ref, step, bw)`
-
-Python equivalent of the FASTar function in MATLAB.
-
-**Args:**
-
-- `pregions` (list[str]): List of pre-regions to search within.
-- `ref` (str): Reference sequence.
-- `step` (int): Step size for sliding window.
-- `bw` (float): Bandwidth for kernel density estimation.
-
-**Returns:**
-
-- `nums` (np.array): Number of local maxima found in each pre-region.
-- `locs` (list): List of locations of local maxima for each pre-region.
+leverages the semi-degenerate BBA/DDC structure in our barcoding scheme to identify barcodes using a custom alignment matrix with a 0 penalty for on target alignments (“B to B” or “D to D”), and -5 penalty for unexpected alignments (“A to B” or “C to D”) in the barcode region. The Barcoat input is column [m + 1] from the Chophat output, which contains the barcode region downstream of the BFP coding sequence. Sequences with a perfect alignment score and length (18 bp) are saved directly. Sequences with 1 mismatch/indel in the constant tethered bases (A for BC1, C for BC2) are corrected by adding back the constant tethered base and then saved. Sequences with a mutation/indel in the variable region are queried against the short-read sequencing data obtained from flow-seq experiments (see below). If a match is found in the region containing the mutation/indel, the sequence is corrected based on the illumina reference. Sequences with two or more mismatches/indels are discarded.
