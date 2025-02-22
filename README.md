@@ -91,7 +91,7 @@ Checkout [`example_script_python.ipynb`](./wimpy_python/example_script_python.ip
 
 ## WIMPY Functions Documentation
 
-### `fastqall`
+### `fastqall` (*fast-"call"*)
 
 Combines reads from all fastq files in the directory, which are by default split into 4000-read blocks by Guppy/Dorado, into a single cell array while discarding sequence headers and information about per-base quality scores. The output from this step is a n-by-1 cell array containing all the reads, where n is the read depth obtained from the nanopore run.
 
@@ -109,7 +109,7 @@ Python version of `wimpy` package contains an upgraded version, `tilepin_v2`, wh
 
 Truncates reads based on landmark coordinates identified by Tilepin, yielding a n-by-(m + 1) cell array, where n is the total number of reads and m is the number of landmarks (e.g., mRuby, Ert2 domain, BFP etc.). The inputs to `chophat` are the n-by-1 cell array containing all nanopore reads (Bowtiles output) and the n-by-m integer array specifying landmark indices within each read (Tilepin output). The output is an n-by-(m + 1) cell array containing each nanopore read (n) sub-divided into sections that correspond to the distance from one landmark (m) to the next (m+1). In the case of all libraries used in this study, the final column of the `chophat` output array for each read contains the region downstream of the BFP EU, which runs from genetic landmark m (BFP) to m+1 (end of the read). The outputs from `chophat` are sent in parallel to Viscount and Barcoat for identity assignment and barcode sequence determination, respectively.
 
-### `viscount`
+### `viscount` (*"vie"-count*)
 
 uses a fast, highly specific containment search method to query a defined sub-section of each read against a shortlist of genetic part sequences to make part identity assignments. The inputs to `viscount` are columns 1 through m of the n-by-(m + 1) cell array output from Chophat (i.e., all sequence sub-sections other than the region downstream of BFP) and a reference cell array containing the sequences of all possible genetic parts within a category (e.g., all 8 promoters used in the 384-member library) (Fig. 2A). The containment search works as follows:
 
@@ -121,7 +121,7 @@ uses a fast, highly specific containment search method to query a defined sub-se
 
 The outputs from this process are part assignments for each read found to unambiguously contain just one part from the set, and a confusion matrix showing the number of reads that were assigned to one part (diagonal of the matrix) and two parts (off-diagonal elements). Within the part assignment output, reads in which a part could not be identified are assigned “0”, while confused reads are assigned “-1”. All 0 and -1 reads identified by this analysis are subsequently discarded.
 
-### `fastar` (FASTar)
+### `fastar` (*FASTar*)
 
 uses the same container search method as `viscount` (mentioned above), and operates on the same input cell array, but is used in instances where multiple copies of an identical sequence are present, such as arrays of binding sites, and the goal is to capture their location (relative to each other or absolute location in the read). The function runs identically to `viscount`, querying reads from the cell array output from chophat and performing a containment search for tiles, and records the counts as well as the locations of the tiles along a read. This is then followed by running a kernel density filter on the locations of the tiles along each read with a user defined bandwidth, which is intended to be set based on the size of the part as well as relative expected distance between the parts. A search for local maxima of the kernel density output then returns the number of such identical parts (e.g., BMs), and their relative locations along the read. The outputs from this function are an array that contains the number of peaks identified in each read in the array, and a cell array that contains the location of each of the peaks for each read. In the two-input dual inducible synTF library, `fastar` is used to identify the numbers and relative locations of two different binding site sequences (the cognate binding site for both zinc finger TFs), and the pattern is determined based on the location of these binding sites (alternating binding sites, or clustered binding sites). Any reads in which the part could not be identified are assigned “0” in both the location and count outputs by this analysis, and are subsequently discarded.
 
