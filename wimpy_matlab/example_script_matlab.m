@@ -53,9 +53,9 @@ tregions = chophat(reads_correct, positions2(:, 2), 2000, 1);
 [~,minP_variants_scaled(:,4)] = max(minP_variants_scaled, [], 2);
 minP_variants_scaled((sum(minP_variants_scaled(:,1:3),2) < 0.2),4) = 0;
 
-%Number of Binding sites using FASTar
+%Number of Binding sites using fastar
 BS10_1 = upper('cGGCGTAGCCGATGTCGCGc');
-[variants_bs, ~] = FASTar(pregions, BS10_1, 6, 8);
+[variants_bs, ~] = fastar(pregions, BS10_1, 6, 8);
 
 %Everything between
 variants_bs(variants_bs > 6.9 & variants_bs < 9.1) = 8;

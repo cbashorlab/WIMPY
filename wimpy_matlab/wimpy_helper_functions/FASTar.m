@@ -1,7 +1,7 @@
-function [nums, locs] = FASTar(pregions, ref, step, bw)
-% FASTar - Finds approximate substring matches in regions of interest
+function [nums, locs] = fastar(pregions, ref, step, bw)
+% fastar - Finds approximate substring matches in regions of interest
 %
-% Syntax:  [nums, locs] = FASTar(pregions, ref, step, bw)
+% Syntax:  [nums, locs] = fastar(pregions, ref, step, bw)
 %
 % Inputs:
 %    pregions - Cell array of strings, each representing a region of interest
@@ -18,7 +18,7 @@ function [nums, locs] = FASTar(pregions, ref, step, bw)
 %    ref = 'ATCG';
 %    step = 2;
 %    bw = 0.5;
-%    [nums, locs] = FASTar(pregions, ref, step, bw);
+%    [nums, locs] = fastar(pregions, ref, step, bw);
 %
 
 nums = zeros(size(pregions));

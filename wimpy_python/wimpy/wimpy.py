@@ -315,10 +315,10 @@ def viscount(
     return match_ratios, match_counts, conf_matrix
 
 
-def FASTar(seqs, ref, step, bw):
+def fastar(seqs, ref, step, bw):
     #! not final, to be updated after matlab script update
     """
-    Python equivalent of the FASTar function in MATLAB.
+    Python equivalent of the fastar function in MATLAB.
 
     Args:
         pregions (list[str]): list of pre-regions to search within.
