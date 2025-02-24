@@ -331,9 +331,9 @@ def fastar(seqs, ref, step, bw):
         locs (list): list of locations of local maxima for each pre-region.
     """
     nums = np.zeros(len(seqs))
-    locs = [None] * len(pregions)
+    locs = [None] * len(seqs)
 
-    for j, x in enumerate(pregions):
+    for j, x in enumerate(seqs):
         a1 = []
         if "X" not in x:
             for i in range(len(ref) - step):
