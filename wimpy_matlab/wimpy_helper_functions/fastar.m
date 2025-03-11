@@ -41,7 +41,9 @@ for j = 1:length(pregions)
 
     if ~isempty(a1)
         [f, x] = ksdensity(unique(a1), 'bandwidth', bw);
+        fmax = f(islocalmax(f));
         a1 = x(islocalmax(f));
+        a1(fmax < 0.1*max(fmax)) = [];
         locs(j) = {a1};
         nums(j) = length(a1);
     end
