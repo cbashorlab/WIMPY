@@ -5,8 +5,13 @@ from tqdm.auto import tqdm
 from glob import glob
 import re
 import numpy as np
+import warnings
 from os import PathLike
 from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde
+from scipy.signal import argrelextrema
+from sklearn.neighbors import KernelDensity
+
 
 
 COMPLEMENT = str.maketrans("ATGC", "TACG")
@@ -141,6 +146,12 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
 
 
 def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
+    warnings.warn(
+        "tilepin will be deprecated soon, please use tilepin_v2 instead. tilepin_v2 is faster and more efficient.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     seqs = [s.upper() for s in seqs]
     ref = ref.upper()
 
@@ -173,7 +184,7 @@ def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
 def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
     """
     Improved tilepin using hashmap search to determine whether
-    a tile is in certain region of sequences.
+    a reference sequence is present within reads in a given array.
 
     Args:
         seqs (list[str]): input sequences to search
@@ -315,7 +326,7 @@ def viscount(
     return match_ratios, match_counts, conf_matrix
 
 
-def fastar(seqs, ref, step, bw):
+def fastar(seqs, ref, tile_len=6, bw=None):
     #! not final, to be updated after matlab script update
     """
     Python equivalent of the fastar function in MATLAB.
@@ -330,26 +341,32 @@ def fastar(seqs, ref, step, bw):
         nums (np.array): number of local maxima found in each pre-region.
         locs (list): list of locations of local maxima for each pre-region.
     """
+
+    if bw is None:
+        bw = 0.5 * len(ref)
+
     nums = np.zeros(len(seqs))
     locs = [None] * len(seqs)
 
     for j, x in enumerate(seqs):
         a1 = []
-        if "X" not in x:
-            for i in range(len(ref) - step):
-                a = ref[i : i + step]
-                y = [m.start() for m in re.finditer(a, x)]
-                if y:
-                    a1.extend(y)
-            if a1:
-                kde = gaussian_kde(np.unique(a1), bw_method=bw)
-                density = kde(np.unique(a1))
-                a1 = np.unique(a1)[
-                    np.r_[True, density[1:] > density[:-1]]
-                    & np.r_[density[:-1] > density[1:], True]
-                ]
-                locs[j] = a1
-                nums[j] = len(a1)
+        if x == '': continue
+
+        tiles = to_tiles(ref, tile_len=tile_len)
+        for tile in tiles: 
+            a1 += [m.start() for m in re.finditer(tile, x)]
+
+        if a1:
+            # kde = gaussian_kde(a1, bw_method=0.005*bw)
+            # density = kde.evaluate(np.linspace(min(a1)-100, max(a1)+100, max(a1)+100))
+            kde_skl = KernelDensity(bandwidth=bw)
+            kde_skl.fit(np.array(a1).reshape(-1, 1))
+            density = np.exp(kde_skl.score_samples(np.linspace(min(a1)-100, max(a1)+100, max(a1)+100).reshape(-1, 1)))
+            dmax = argrelextrema(density, np.greater)
+            dval = density[dmax[0]]
+            dmax = dmax[0][dval > 0.1*max(dval)]
+            locs[j] = dmax
+            nums[j] = len(dmax)
 
     return nums, locs
 
@@ -359,11 +376,11 @@ def barcoat(seqs, preset="BBA", barcode_construct=None, alinger=None):
     Aligns sequences to a barcode construct using a preset or custom aligner.
     Parameters:
     seqs (list of str): List of sequences to be aligned.
-    preset (str, optional): Preset configuration for barcode construct and aligner. 
+    preset (str, optional): Preset configuration for barcode construct and aligner.
                             Options are "BBA", "DDC", or None. Default is "BBA".
-    barcode_construct (Bio.Seq.Seq, optional): Custom barcode construct sequence. 
+    barcode_construct (Bio.Seq.Seq, optional): Custom barcode construct sequence.
                                                Required if preset is None.
-    aligner (Bio.Align.PairwiseAligner, optional): Custom aligner object. 
+    aligner (Bio.Align.PairwiseAligner, optional): Custom aligner object.
                                                    Required if preset is None.
     Returns:
     tuple: A tuple containing:
