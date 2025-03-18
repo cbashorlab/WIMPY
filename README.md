@@ -103,7 +103,7 @@ Indexes the reads and tethers them to a common reference point in the plasmid li
 
 Identifies library-specific constant landmarks in each read using a containment search (see Methods) and indexes the locations of these landmarks for later use. Examples of invariant genetic landmarks include fluorescent reporters, such as mRuby (384-member library, Fig. 2A), the Ert2 domain (166k member library, Fig. 3A), or the BFP fluorescent protein in the barcoded EU used in both libraries. The inputs to `tilepin` are the cell array containing all the reads, and DNA sequences representing identifiable landmarks (i.e., mRuby and BFP). The output is an n-by-2 integer array where n is the read depth on the library, and the columns contain the position of mRuby and BFP respectively.
 
-Python version of `wimpy` package contains an upgraded version, `tilepin_v2`, which utilizes hashmap and has a better performance than the original `tilepin`. See the end of [`example_script_python.ipynb`](./wimpy_python/example_script_python.ipynb) for performance comparison.
+The python implementation of `wimpy` contains an upgraded version, `tilepin_v2`, which utilizes hashmaps and therefore has better performance than the original `tilepin`. See the end of [`example_script_python.ipynb`](./wimpy_python/example_script_python.ipynb) for performance comparison.
 
 ### `chophat`
 
