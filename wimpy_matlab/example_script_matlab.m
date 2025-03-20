@@ -20,6 +20,7 @@ WT = upper('tcagaatcagggcatctcaaacgacatctccgc');
 C1_WT = upper('ccaggagaaCGAccatttca tctgtatgCGTaatttctct atttgcatgAGGaacttttc atttgcatgAGGaattttag atctgtatgAGAaatttctc atatgtatgCGcaacttttc');
 C1_6x = upper('CCAGGAGAAGCCCCATTTCA TCTGTATGGCCAATTTCTCT ATTTGCATGGCCAACTTTTC ATTTGCATGGCCAATTTTAG ATCTGTATGGCTAATTTCTC ATATGTATGGCCAACTTTTC');
 ZF_parts = {WT C1_WT C1_6x};
+BS10_1 = upper('cGGCGTAGCCGATGTCGCGc');
 
 %load in data using fastqall function
 [~, l, seq] = fastqall('../example_fastq', 'fastq');
@@ -54,7 +55,6 @@ tregions = chophat(reads_correct, positions2(:, 2), 2000, 1);
 minP_variants_scaled((sum(minP_variants_scaled(:,1:3),2) < 0.2),4) = 0;
 
 %Number of Binding sites using fastar
-BS10_1 = upper('cGGCGTAGCCGATGTCGCGc');
 [variants_bs, ~] = fastar(pregions, BS10_1, 6, 8);
 
 %Everything between
@@ -69,18 +69,12 @@ variants_bs(variants_bs == 8) = 3; %8 binding sites
 variants_bs(variants_bs == 12) = 4; %12 binding sites
 
 %Terminators
-[~, variants_term, ~] = viscount(tregions, 10, terminators_100k, 0.2, 'F');
+[variants_term, ~, ~] = viscount(tregions, 10, spacers_100k(2), 0.2, 'F');
 
-%scale number of tiles to length of reference
-term_lengths = [length(cell2mat(terminators_100k(1))), length(cell2mat(terminators_100k(2))), length(cell2mat(terminators_100k(3)))];
-variants_term_scaled = zeros(size(variants_term));
-variants_term_scaled(:,1) = variants_term(:,1);
-variants_term_scaled(:,2) = variants_term(:,2)-variants_term(:,1).*1.5;
-variants_term_scaled(:,3) = variants_term(:,3)-variants_term(:,2);
-threshold = 10; variants_term_scaled(variants_term_scaled < threshold) = 0;
+term_indices = ones(size(variants_term));
+term_indices(variants_term > 0.2 & variants_term < 0.52) = 2;
+term_indices(variants_term > 0.52) = 3;
 
-[~,term_indices] = max(variants_term_scaled, [], 2);
-x = sum(variants_term_scaled,2); term_indices(x < 1) = 0;
 %Calculate assignments: minP_variants_scaled, variants_BS, term_indices
 reporter_variants = [variants_bs minP_variants_scaled(:,4) term_indices];
 
