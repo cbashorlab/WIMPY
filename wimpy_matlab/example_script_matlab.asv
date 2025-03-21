@@ -124,6 +124,10 @@ variants_synTF_spacer = ones(size(spacer_synTF));
 variants_synTF_spacer(spacer_synTF > 0.2 & spacer_synTF < 0.52) = 2;
 variants_synTF_spacer(spacer_synTF > 0.52) = 3;
 
+spacer_synTF(spacer_synTF < 0.2) = 0;
+spacer_synTF = [zeros(size(spacer_synTF, 1), 1) spacer_synTF];
+[~, variants_synTF_spacer] = max(spacer_synTF, [], 2);
+
 %Calculate assignments
 synTF_variants = [variants_synTF_prom variants_AD variants_IDR variants_ZF variants_synTF_term variants_synTF_spacer];
 
@@ -138,24 +142,55 @@ all_100k_variants = [synTF_variants reporter_variants variants_orientation];
 %remove all rows containing zero or -1
 all_100k_variants(any(all_100k_variants < 1,2),:) = [];
 %library_100k = all_100k_variants(:,1) + 4*(all_100k_variants(:,2)-1) + 16*(all_100k_variants(:,3)-1) + 80*(all_100k_variants(:,4)-1) + 240*(all_100k_variants(:,5)-1) + 2880*(all_100k_variants(:,6)-1) + 11520*(all_100k_variants(:,7)-1) +  34560*(all_100k_variants(:,8)-1);
-library_100k = sum((all_100k_variants - [0 ones(1, 9)]).*[1 4 16 64 192 768 2304 9216 27648 82944], 2);
-library_100k(library_100k < 1) = 0;
+library_100k = (all_100k_variants - [0 ones(1, 9)]).*[1 4 16 64 192 768 2304 9216 27648 82944];
 
-%% Barcode Assignments
+%% Barcoding & Barcoded AssTable Generation
 tregion_BFP = chophat(reads_correct, positions2(:, 5), 1000, 1);
+%load barcode structure and BLOSUM62 matrix
+bc1_cons = 'aTTaTTaTTaTTaTTaTTa';
+bc2_cons = 'cTTcTTcTTcTTcTTcTTc';
 
-%Identify bc1 and 2
-[bc1, bc1_l, bc1_score, bc1_pos] = barcoat(tregion_BFP, 'BBA', 0);
-[bc2, bc2_l, bc2_score, bc2_pos] = barcoat(tregion_BFP, 'DDC', 0);
+m = readmatrix('Blosum62_BC1.xlsx');
+m = m(:,2:25);
 
-%% Data QC and filtering
+n = readmatrix('Blosum62_BC2.xlsx');
+n = n(:,2:25);
 
-is_valid_assignment = bc1_score > 85 & bc2_score > 90;
-is_fully_assigned = library_100k > 0;
+bc1 = cell(size(tregion_BFP));
+bc1_pos = zeros(length(tregion_BFP),1);
+bc1_l = bc1_pos;
+bc1_scores = bc1_pos;
 
-bc1_correct = bc1(is_valid_assignment & is_fully_assigned);
-bc2_correct = bc2(is_valid_assignment & is_fully_assigned);
-barcoded_variants = all_100k_variants(is_valid_assignment & is_fully_assigned,:);
+bc2 = bc1;
+bc2_pos = bc1_pos;
+bc2_l = bc1_l;
+bc2_scores = bc1_scores;
+
+count = 0;
+
+for i = 1:length(tregion_BFP)
+    a = tregion_BFP{i};
+    [score1,barcode1,bc1_p] = swalign(bc1_cons, a, 'ScoringMatrix',m);
+    bc1_scores(i) = score1;
+    bc1(i) = cellstr(barcode1(3,:));
+    bc1_pos(i) = bc1_p(2);
+    bc1_l(i) = length(barcode1(3,:));
+    [score2,barcode2,bc2_p] = swalign(bc2_cons, a, 'ScoringMatrix',n);
+    bc2_scores(i) = score2;
+    bc2(i) = cellstr(barcode2(3,:));
+    bc2_pos(i) = bc2_p(2);
+    bc2_l(i) = length(barcode2(3,:));    
+    count = count + logical(score1 > 85 & score2 > 90);
+end
+
+barcodes1_correct = bc1(bc1_scores > 85 & bc2_scores > 90);
+barcodes2_correct = bc2(bc1_scores > 85 & bc2_scores > 90);
+barcoded_variants = all_100k_variants(bc1_scores > 85 & bc2_scores > 90,:);
+
+%Remove all reads with incomplete circuit IDs
+barcodes1_correct(any(barcoded_variants < 1,2)) = [];
+barcodes2_correct(any(barcoded_variants < 1,2)) = [];
+barcoded_variants(any(barcoded_variants < 1,2),:) = [];
 
 %Making the ass table
 AB_100k_asstable = zeros(length(barcoded_variants),1);

@@ -1,5 +1,5 @@
 function [bc, bc_l, bc_score, bc_pos] = barcoat(tregion_BFP, preset, scoring_matrix)
-% barcoat - Aligns barcodes using semi-constrained structures.
+% barcoat - Aligns barcodes using the structure of the barcod.
 %
 %
 % Inputs:
@@ -25,10 +25,10 @@ function [bc, bc_l, bc_score, bc_pos] = barcoat(tregion_BFP, preset, scoring_mat
 %
 % See also: swalign
 if sum(preset == 'BBA') == 3
-   cus = 'ATTATTATTATTATTATTA';
+   preset = 'ATTATTATTATTATTATTA';
    m = [5 -5 -5 -5; -5 5 5 5; -5 5 5 5; -5 5 5 5]; %A, C, G, T
 elseif sum(preset == 'DDC')
-   cus = 'CTTCTTCTTCTTCTTCTTC';
+   preset = 'CTTCTTCTTCTTCTTCTTC';
    m = [5 -5 5 5; -5 5 -5 -5; 5 -5 5 5; 5 -5 5 5];
 else
     m = scoring_matrix;
@@ -44,14 +44,10 @@ bc_l = bc_pos; bc_score = bc_pos;
 
 for i = 1:length(tregion_BFP)
     a = cell2mat(tregion_BFP(i));
-    if contains(a, 'X')
-        bc_score(i) = 0; bc(i) = cellstr('X'); bc_pos(i) = -1; bc_l(i) = 0;
-    else
-        [score, barcode, pos] = swalign(cus, a, 'alphabet', 'nt', 'ScoringMatrix', m);
-        bc_score(i) = score;
-        bc(i) = cellstr(barcode(3,:));
-        bc_pos(i) = pos(2);
-        bc_l(i) = length(barcode(3, barcode(3, :) ~= '-'));
-    end
+    [score, barcode, pos] = swalign(preset, a, 'alphabet', 'nt', 'ScoringMatrix', m);
+    bc_score(i) = score;
+    bc(i) = cellstr(barcode(3,:));
+    bc_pos(i) = pos(2);
+    bc_l(i) = length(barcode(3, barcode(3, :) ~= '-'));
 end
 
