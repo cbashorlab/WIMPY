@@ -78,7 +78,7 @@ def to_tiles(seq: str, tile_len: int = 10):
 
 
 def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
-    """use tiling to determine the occurence of a sequence in a list of reads
+    """use containment search to determine the occurence of a sequence in a list of reads
 
     Args:
         seqs (list): a list of reads to be tiled to
