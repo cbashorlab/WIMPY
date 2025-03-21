@@ -1,4 +1,8 @@
-%% Analysing A subset of data from Experiment 68 (166K-member Level 3 library)
+%% Analysing A subset of data from O'Connell, Rai et al
+%This is a plain text version of example_live_script_matlab.mlx. For more
+%context behind the functions used in this script, and detailed
+%explanations on how the WIMPY pipeline works in matlab, please refer to
+%the live script file.
 
 addpath('./wimpy_helper_functions');
 %Load reference sequences
@@ -48,7 +52,7 @@ pregions = chophat(reads_correct, positions2(:, 1:2), 0, 0);
 tregions = chophat(reads_correct, positions2(:, 2), 2000, 1);
 
 %Minimal Promoter
-[minP_variants_scaled, minP_variants, minPconf] = viscount(pregions, 6, minP_100k, 0.2, 'T');
+[minP_variants_scaled, ~, minPconf] = viscount(pregions, 6, minP_100k, 0.2, 'T');
 [~,minP_variants] = max(minP_variants_scaled, [], 2);
 minP_variants((sum(minP_variants_scaled(:,1:3),2) < 0.2)) = 0;
 
