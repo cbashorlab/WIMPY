@@ -1,7 +1,7 @@
 # WIMPY: A software package for nanopore sequencing analysis of combinatorial genetic libraries of arbitrary length scales
 
 <!-- TODO: add link to preprint/journal -->
-Checkout the full article at [OUP Bioinformatics]()!
+Manuscript available soon!
 
 ![abstract](./pipeline.png)
 
