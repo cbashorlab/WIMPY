@@ -87,7 +87,7 @@ for i = 1:3
     prom_conf(4, i) = 0;
 end
 
-%Create output table
+%Create output 
 minimapout_prom = table(un, prom_assignments, prom_max, 'VariableNames', {'Read Name', 'Assignment', 'Perc. Align'});
 %writetable(minimapout_prom, 'Minimap_prom_assignments.csv'); %Uncomment only
 %if reprocessing the data and saving is necessary
@@ -97,7 +97,6 @@ minimapout_prom = table(un, prom_assignments, prom_max, 'VariableNames', {'Read 
 %Promoters
 addpath('../wimpy_matlab/wimpy_helper_functions/')
 
-%WIMPY processing (bowtile, followed by tilepin -> chophat -> viscount)
 Puro = upper('cgctccgcatcggcctaaggaaccggcgtggttcctggctacggtgggagtctcacctgaccatcaaggaaagggattgggaagtgctgtcgttcttcca');
 mRuby = upper('GTGAGTAAAGGCGAAGAACTTATCAAGGAAAATATGCGGATGAAAGTGGTTATGGAGGGTAGCGTGAACGGACACCAGTTCAAATGCACGGGAGAGGGCGAGGGGCGACCCTACGAGGGAGTCCAAACAATGAGGATTAAGGTTATAGAAGGTGGTCCGCTGCCATTCGCATTCGATATTTTGGCCACGTCCTTCATGTACGGCTCCCGAACCTTTATCAAATACCCTGCGGATATCCCAGACTTTTTCAAGCAATCCTTTCCGGAAGGGTTCACGTGGGAGCGAGTCACGAGATATGAGGATGGAGGCGTAGTAACAGTAACCCAAGACACATCACTTGAGGACGGTGAGCTTGTCTACAATGTGAAGGTACGCGGCGTCAATTTCCCCTCAAATGGCCCGGTGATGCAAAAGAAAACTAAAGGATGGGAGCCCAACACCGAAATGATGTACCCGGCAGATGGGGGGCTTAGGGGCTATACGGACATCGCATTGAAGGTTGATGGCGGGGGCCATCTCCATTGTAACTTTGTAACTACATATCGGTCAAAAAAGACTGTGGGGAACATTAAAATGCCGGGAGTACACGCTGTTGATCATCGCCTGGAAAGGATAGAGGAAAGCGACAATGAAACGTATGTAGTACAGCGGGAGGTCGCCGTCGCCAAATATAGTAATCTGGGCGGTGGCATGGACGAGCTTTATAAA');
 mRuby = mRuby(200:300);
@@ -123,14 +122,12 @@ synTFprom_variants_scaled = [zeros(size(synTFprom_variants_scaled, 1), 1) synTFp
 [vp,variants_synTF_prom] = max(synTFprom_variants_scaled, [], 2);
 variants_synTF_prom = variants_synTF_prom - 1;
 
-%Create output table
 wimpyout_prom = table(hs_correct, variants_synTF_prom, vp, 'VariableNames', {'Read Name', 'Assignment', 'Perc. Align'});
 %writetable(wimpyout_prom, 'Wimpy_prom_assignments.csv'); %Uncomment only
 %if reprocessing the data and saving is necessary
 
 %% WIMPY Binding sites
 
-%WIMPY pipeline (tilepin -> chophat -> fastar)
 GFP = upper('atggtgagcaagggcgaggagctgttcaccggggtggtgcccatcctggtcgagctggacggcgacgtaaacggccacaagttcagcgtgtccggcgagggcgagggcgatgccacctacggcaagctgaccctgaagttcatctgcaccaccggcaagctgcccgtgccctggcccaccctcgtgaccaccctgacctacggcgtgcagtgcttcagccgctaccccgaccacatgaagcagcacgacttcttcaagtccgccatgcccgaaggctacgtccaggagcgcaccatcttcttcaaggacgacggcaactacaagacccgcgccgaggtgaagttcgagggcgacaccctggtgaaccgcatcgagctgaagggcatcgacttcaaggaggacggcaacatcctggggcacaagctggagtacaactacaacagccacaacgtctatatcatggccgacaagcagaagaacggcatcaaggtgaacttcaagatccgccacaacatcgaggacggcagcgtgcagctcgccgaccactaccagcagaacacccccatcggcgacggccccgtgctgctgcccgacaaccactacctgagcacccagtccgccctgagcaaagaccccaacgagaagcgcgatcacatggtcctgctggagttcgtgaccgccgccgggatcactctcggcatggacgagctgtacaagtaa');
 A4 = upper('ggagcatcgcccttccccggccctcaggtaagaggaccaaataccgtagccgtttccaatttcagtcctttagcgccacctggtgctaactactctatcacgcttttatccaataactacctttgtaaatttcctttcaaaagttctggccgggcgcggtggcTGTAC');
 A4 = A4(end-50:end);
@@ -155,7 +152,6 @@ bs_num_wimpy(bs_num == 4) = 2;
 bs_num_wimpy(bs_num == 8) = 3;
 bs_num_wimpy(bs_num == 12) = 4;
 
-%Create output table
 wimpyout_bs = table(hs_correct, bs_num_wimpy, ones(size(bs_num_wimpy)), 'VariableNames', {'Read Name', 'Assignment', 'Perc. Align'});
 %writetable(wimpyout_bs, 'Wimpy_bs_assignments.csv'); %Uncomment only
 %if reprocessing the data and saving is necessary
@@ -173,7 +169,7 @@ variants_bs_gt(a > 160 & a < 255) = 2; %4 binding sites
 variants_bs_gt(a > 255 & a < 415) = 3; %8 binding sites
 variants_bs_gt(a > 415 & a < 555) = 4; %12 binding sites
 
-%% Ground truths - SynTF promoters - load manually annotated ground truth csv
+%% Ground truths - SynTF promoters - load manually annotated ground truth file
 
 variants_synTF_gt = readcell('GroundTruth_prom_assignments.csv');
 variants_synTF_gt = cell2mat(variants_synTF_gt(2:end, 2));
@@ -227,7 +223,6 @@ for i = 1:length(reads_unique)
     end
 end
 
-%Compute statistics
 mm_perc = 100*minimap_stats/gt_corr;
 wp_perc = 100*wimpy_stats/gt_corr;
 
@@ -278,6 +273,6 @@ for i = 1:length(reads_unique)
     end
 end
 
-%Compute statistics
 mm_perc_prom = 100*minimap_stats_prom/gt_corr_prom;
 wp_perc_prom = 100*wimpy_stats_prom/gt_corr_prom;
+
