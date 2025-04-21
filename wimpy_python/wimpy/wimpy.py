@@ -13,7 +13,6 @@ from scipy.signal import argrelextrema
 from sklearn.neighbors import KernelDensity
 
 
-
 COMPLEMENT = str.maketrans("ATGC", "TACG")
 
 
@@ -350,10 +349,11 @@ def fastar(seqs, ref, tile_len=6, bw=None):
 
     for j, x in enumerate(seqs):
         a1 = []
-        if x == '': continue
+        if x == "":
+            continue
 
         tiles = to_tiles(ref, tile_len=tile_len)
-        for tile in tiles: 
+        for tile in tiles:
             a1 += [m.start() for m in re.finditer(tile, x)]
 
         if a1:
@@ -361,10 +361,16 @@ def fastar(seqs, ref, tile_len=6, bw=None):
             # density = kde.evaluate(np.linspace(min(a1)-100, max(a1)+100, max(a1)+100))
             kde_skl = KernelDensity(bandwidth=bw)
             kde_skl.fit(np.array(a1).reshape(-1, 1))
-            density = np.exp(kde_skl.score_samples(np.linspace(min(a1)-100, max(a1)+100, max(a1)+100).reshape(-1, 1)))
+            density = np.exp(
+                kde_skl.score_samples(
+                    np.linspace(min(a1) - 100, max(a1) + 100, max(a1) + 100).reshape(
+                        -1, 1
+                    )
+                )
+            )
             dmax = argrelextrema(density, np.greater)
             dval = density[dmax[0]]
-            dmax = dmax[0][dval > 0.1*max(dval)]
+            dmax = dmax[0][dval > 0.1 * max(dval)]
             locs[j] = dmax
             nums[j] = len(dmax)
 
@@ -411,6 +417,16 @@ def barcoat(seqs, preset="BBA", barcode_construct=None, alinger=None):
     ```
     """
 
+    if preset not in ["BBA", "DDC", None]:
+        raise ValueError(
+            f"preset '{preset}' is not recognized. must be either 'BBA', 'DDC', or None."
+        )
+
+    if preset is None and (barcode_construct is None or aligner is None):
+        raise ValueError(
+            "barcode_construct and aligner must be provided if preset is None"
+        )
+
     # load barcode structure and substitution matrix
     if preset == "BBA":
         barcode_construct = Seq("ATTATTATTATTATTATTA")
@@ -439,11 +455,6 @@ def barcoat(seqs, preset="BBA", barcode_construct=None, alinger=None):
         )
         aligner.open_gap_score = -8
         aligner.extend_gap_score = -8
-
-    elif preset is None and (barcode_construct is None or aligner is None):
-        raise ValueError(
-            "barcode_construct and aligner must be provided if preset is None"
-        )
 
     # else: use the provided barcode_construct and aligner
 
