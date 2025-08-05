@@ -41,6 +41,15 @@ def fastqall(
         q_scores: all the quality scores
         lengths: lengths of all reads
         seqs: sequence of all the reads
+    
+    Example:
+    ```
+    >>> import numpy as np
+    >>> from wimpy import fastqall
+    >>> q_scores, lengths, seqs = fastqall(directory="./data", return_names=False)
+    >>> print("Number of reads:", len(seqs))
+    >>> print("First sequence:", seqs[0])
+    ```
     """
 
     # setup directory
@@ -61,7 +70,7 @@ def fastqall(
             lengths.append(len(read))
             seqs.append(str(read.seq))
             names.append(read.id)
-
+            
     if return_names:
         return q_scores, lengths, seqs, names
     return q_scores, lengths, seqs
@@ -96,6 +105,22 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
         right_seq (list): valid sequences
         flip (list): whether the match is on fwd strand (0), rev
         strand (1), or no match (-1)
+        
+    Example:
+    ```
+    >>> seqs = [
+    ...     "ATGCGTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGC",
+    ...     "GCTAGCTAGCTAGCTAGCTAGCTACGTACGTACGTAC",
+    ...     "TGCATGCATGCATGCATGCATGCATGCATGCATGCAT"
+    ... ]
+    >>> ref = "ATGCGTACGTAGCTAGCTAGC"
+
+    >>> # Run bowtile
+    >>> new_seq, right_seq, flip = wp.bowtile(seqs, ref, thresh=0.03, tile_len=5, max_len=20)
+    >>> print("New Sequences:", new_seq)
+    >>> print("Original Sequences:", right_seq)
+    >>> print("Strand Orientation (0=fwd, 1=rev, -1=fail):", flip)
+    ```
     """
 
     # convert to upper case
@@ -202,6 +227,20 @@ def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
         num_matches: the number of tiles matched the sequence
         match_index: the index where the reference sequence is located.
         matches: the list of all indices where match is found
+        
+    Example:
+    ```
+    >>> seqs = [
+    ...     "ATGCGTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGC",
+    ...     "CTAGCCATACTCGGACATGCGTACGTATCTAGCTAGC",
+    ...     "TGCATGCATGCATGCATGCATGCATGCATGCATGCAT"
+    ... ]
+    >>> ref = "ATGCGTACGTAGCTAGCTAGC"
+    >>> num_matches, match_index, matches = wp.tilepin_v2(seqs, ref, thresh=0.03, tile_len=5)
+    >>> print("Number of matches:", num_matches)
+    >>> print("Match index:", match_index)
+    >>> print("Matches array:", matches)
+    ```
     """
     seqs = [s.upper() for s in seqs]
     ref = ref.upper()
@@ -244,6 +283,20 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
 
     Returns:
         list[str]: the truncated sequences
+        
+    Example:
+    ```
+    >>> import numpy as np
+    >>> seqs = [
+    ...     "ATGCGTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGC",
+    ...     "GCTAGCTAGCTAGCTAGCTAGCTACGTACGTACGTAC",
+    ...     "TGCATGCATGCATGCATGCATGCATGCATGCATGCAT"
+    ... ]
+    >>> positions = np.array([0, 5, 10])
+    >>> end_positions = np.array([10, 20, 30])
+    >>> truncated_seqs = wp.chophat(seqs, positions, end_positions, max_length=15)
+    >>> print(truncated_seqs)
+    ```
     """
     truncated_sequences = []
 
@@ -303,6 +356,20 @@ def viscount(
         match_counts: the raw count of number of tiles get assigned to the
         sequences.
         conf_matrix (optional): confusion matrix for the assignment
+        
+    Example:
+    ```
+    >>> seqs = [
+    ...     "ATGCGTACGTAGCTAGCTAGCTAGCTAGCTAGCTAGC",
+    ...     "GCTAGCTAGCTAGCTAGCTAGCTACGTACGTACGTAC",
+    ...     "TGCATGCATGCATGCATGCATGCATGCATGCATGCAT"
+    ... ]
+    >>> ref_seqs = ["ATGCGTACGTAGCTAGCTAGC", "CATGCATGCATGCATGCA"]
+    >>> match_ratios, match_counts, conf_matrix = wp.viscount(seqs, ref_seqs, thresh=0.03, tile_len=5)
+    >>> print("Match Ratios:\n", match_ratios)
+    >>> print("Match Counts:\n", match_counts)
+    >>> print("Confusion Matrix:\n", conf_matrix)
+    ```
     """
     ref_lengths = np.array([len(ref) for ref in ref_seqs])
     match_counts = np.zeros((len(seqs), len(ref_seqs)))
@@ -344,6 +411,19 @@ def fastar(seqs, ref, tile_len=6, bw=None):
     Returns:
         nums (np.array): number of local maxima found in each pre-region.
         locs (list): list of locations of local maxima for each pre-region.
+        
+    Example:
+    ```
+    >>> seqs = [
+    ...     "ACTGATCGACTGATCGACTGATGGACTGATCGACTG",
+    ...     "GCTAGCTAGCTAGACTGATCGAGCTACGTAACGTAC",
+    ...     "TGCATGCATGCATGCATGCATGCATGCATGCATGCAT"
+    ... ]
+    >>> ref = "ACTGAT"
+    >>> nums, locs = wp.fastar(seqs, ref, tile_len=3)
+    >>> print("Number of local maxima:", nums)
+    >>> print("Locations of local maxima:", locs)
+    ```
     """
 
     if bw is None:
