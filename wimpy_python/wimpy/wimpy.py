@@ -26,6 +26,7 @@ def fastqall(
     prefix: str = "",
     idx_start: int = None,
     idx_end: int = None,
+    return_names: bool = False,
 ):
     """read all fastq files in the given directory with given prefix. returns
     all the quality scores, lengths, and sequences as a list
@@ -50,6 +51,7 @@ def fastqall(
     q_scores = []
     lengths = []
     seqs = []
+    names = []
 
     # read all files and store q_scores, lens, and seqs
     file_names = sorted(glob(path.join(directory, f"{prefix}*.fastq")))
@@ -58,7 +60,10 @@ def fastqall(
             q_scores.append(read.letter_annotations["phred_quality"])
             lengths.append(len(read))
             seqs.append(str(read.seq))
+            names.append(read.id)
 
+    if return_names:
+        return q_scores, lengths, seqs, names
     return q_scores, lengths, seqs
 
 
