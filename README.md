@@ -236,6 +236,16 @@ The `barcoat` output allows for potential error correction downstream, in the pr
 
 #### Example
 
+Using preset aligner and barcode construct
+
+```python
+>>> seqs = ["TCATGACTAGCATCAGGATCAACGTA", "CTAGGTTTAGCACCACTATGAACTGA"]
+>>> barcode, position, length, score = wp.barcoat(seqs, preset="BBA")
+>>> print(barcode, position, length, score, sep="\n")
+```
+
+Using customized aligner
+
 ```python
 >>> from Bio.Seq import Seq
 >>> from Bio import Align

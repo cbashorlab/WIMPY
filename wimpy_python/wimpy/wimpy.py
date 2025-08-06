@@ -90,7 +90,7 @@ def to_tiles(seq: str, tile_len: int = 10):
     return np.array([seq[i : i + tile_len] for i in range(len(seq) - tile_len + 1)])
 
 
-def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
+def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
     """use containment search to determine the occurence of a sequence in a list of reads
 
     Args:
@@ -140,7 +140,9 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100):
     right_seq = []
 
     # tiling through all sequences
-    for seq in tqdm(seqs, desc="bowtile progress"):
+    if verbose:
+        seqs = tqdm(seqs, desc="bowtile progress")
+    for seq in seqs:
         idx_f = []
         idx_r = []
 
