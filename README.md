@@ -124,7 +124,9 @@ Combines reads from all fastq files in the directory, which are by default split
 
 ### `bowtile`
 
-Indexes the reads and tethers them to a common reference point in the plasmid library. In the manuscript, and our example scripts, we use the C-terminus of the puroR cassette (puro), which should be contained in all level-3 plasmid assemblies. Reads in which puroR is not detected are discarded at this stage, while on-target reads are reconstructed so the reference sequence is located on the 5’ end of the top strand (reads from the opposite orientation are reverse complemented). The output of `bowtile` is a n-by-1 cell array containing all reads indexed to PuroR.
+Indexes the reads and tethers them to a common reference point in the plasmid library. 
+
+In the manuscript, and our example scripts, we use the C-terminus of the puroR cassette (puro), which should be contained in all level-3 plasmid assemblies. Reads in which puroR is not detected are discarded at this stage, while on-target reads are reconstructed so the reference sequence is located on the 5’ end of the top strand (reads from the opposite orientation are reverse complemented). The output of `bowtile` is a n-by-1 cell array containing all reads indexed to PuroR.
 
 #### Example:
 

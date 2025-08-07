@@ -41,7 +41,7 @@ def fastqall(
         q_scores: all the quality scores
         lengths: lengths of all reads
         seqs: sequence of all the reads
-    
+
     Example:
     ```
     >>> import numpy as np
@@ -70,7 +70,7 @@ def fastqall(
             lengths.append(len(read))
             seqs.append(str(read.seq))
             names.append(read.id)
-            
+
     if return_names:
         return q_scores, lengths, seqs, names
     return q_scores, lengths, seqs
@@ -91,7 +91,9 @@ def to_tiles(seq: str, tile_len: int = 10):
 
 
 def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
-    """use containment search to determine the occurence of a sequence in a list of reads
+    """
+    use containment search of the fragmented tiles of the reference sequence
+    to determine the occurence of a sequence in a list of reads
 
     Args:
         seqs (list): a list of reads to be tiled to
@@ -105,7 +107,7 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
         right_seq (list): valid sequences
         flip (list): whether the match is on fwd strand (0), rev
         strand (1), or no match (-1)
-        
+
     Example:
     ```
     >>> seqs = [
@@ -177,6 +179,7 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
 
 
 def tilepin(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
+    """Deprecated, use `tilepin_v2` instead"""
     warnings.warn(
         "tilepin will be deprecated soon, please use tilepin_v2 instead. tilepin_v2 is faster and more efficient.",
         DeprecationWarning,
@@ -229,7 +232,7 @@ def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
         num_matches: the number of tiles matched the sequence
         match_index: the index where the reference sequence is located.
         matches: the list of all indices where match is found
-        
+
     Example:
     ```
     >>> seqs = [
@@ -285,7 +288,7 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
 
     Returns:
         list[str]: the truncated sequences
-        
+
     Example:
     ```
     >>> import numpy as np
@@ -358,7 +361,7 @@ def viscount(
         match_counts: the raw count of number of tiles get assigned to the
         sequences.
         conf_matrix (optional): confusion matrix for the assignment
-        
+
     Example:
     ```
     >>> seqs = [
@@ -402,18 +405,19 @@ def viscount(
 def fastar(seqs, ref, tile_len=6, bw=None):
     #! not final, to be updated after matlab script update
     """
-    Python equivalent of the fastar function in MATLAB.
+    Uses kernel density estimation to determine the occurence, or 
+    multiple occurences of a motif in the sequence. 
 
     Args:
-        pregions (list[str]): list of pre-regions to search within.
+        pregions (list[str]): list of sequence to search within.
         ref (str): reference sequence.
-        step (int): step size for sliding window.
+        tile_len (int): size of tile for sliding window.
         bw (float): bandwidth for kernel density estimation.
 
     Returns:
-        nums (np.array): number of local maxima found in each pre-region.
-        locs (list): list of locations of local maxima for each pre-region.
-        
+        nums (np.array): number of local maxima found in each sequence.
+        locs (list): list of locations of local maxima for each sequence.
+
     Example:
     ```
     >>> seqs = [
