@@ -41,7 +41,7 @@ for i = 1:length(a) %for all the files in the directory
     end
         
     n = a(i).name; %Store the name of the file
-    if a(i).bytes > 10000 && length(n) >= length(prefix) && sum(n(1:length(prefix)) == prefix) == length(prefix) %If the file size is > 10000 bytes and the prefix matches the prefix specified
+    if a(i).bytes > 10000 && length(n) >= length(prefix) && contains(n, prefix) %If the file size is > 10000 bytes and the prefix matches the prefix specified
         [~, s, q] = fastqread(fullfile(a(1).folder, n)); %Read in the fastq
         seq(end+1:end+length(s), 1) = s; %Append to the seq variable
         q_score(end+1:end+length(q), 1) = q; %Append Q scores
