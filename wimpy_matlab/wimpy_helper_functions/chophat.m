@@ -29,7 +29,7 @@ function out = chophat(reads_correct, positions, truncationcriteria, retain)
 %     % out will be {'CGTA', 'AGCT'}
     
 out = cell(size(reads_correct));
-
+warning('off')
 %Trim reads into regions
 for i = 1:length(reads_correct)
     a = cell2mat(reads_correct(i));

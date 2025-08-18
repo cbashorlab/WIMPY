@@ -24,14 +24,15 @@ function [bc, bc_l, bc_score, bc_pos] = barcoat(tregion_BFP, preset, scoring_mat
 % MAT-files required: Blosum62_BC1.xlsx, Blosum62_BC2.xlsx
 %
 % See also: swalign
-if sum(preset == 'BBA') == 3
+if sum(preset(1:3) == 'BBA') == 3
    cus = 'ATTATTATTATTATTATTA';
    m = [5 -5 -5 -5; -5 5 5 5; -5 5 5 5; -5 5 5 5]; %A, C, G, T
-elseif sum(preset == 'DDC')
+elseif sum(preset(1:3) == 'DDC')
    cus = 'CTTCTTCTTCTTCTTCTTC';
    m = [5 -5 5 5; -5 5 -5 -5; 5 -5 5 5; 5 -5 5 5];
 else
     m = scoring_matrix;
+    cus = preset;
 end
 
 if sum(size(m) == [4, 4]) ~= 2
