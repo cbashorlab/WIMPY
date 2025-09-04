@@ -101,6 +101,7 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
         thresh (float): threshold to determine whether the tiling is valid
         tile_len (int, optional): lrngth of tile. Defaults to 10.
         max_len (int, optional): maximum length of ref seq. Defaults to 100.
+        verbose (bool, optional): print out progress. Defaults to False.
 
     Returns:
         new_seq (list): valid sequences that are aligned to start with ref seq
@@ -226,7 +227,7 @@ def tilepin_v2(seqs, ref, thresh=0.03, tile_len=10, verbose=False):
         thresh (float, optional): threshold to determine if the
         sequence contains the reference sequence. Defaults to 0.03.
         tile_len (int, optional): length of tile. Defaults to 10.
-        verbose (bool, optional): print out progress. Defaults to True.
+        verbose (bool, optional): print out progress. Defaults to False.
 
     Returns:
         num_matches: the number of tiles matched the sequence
@@ -342,6 +343,7 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
 def viscount(
     seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=False
 ):
+    
     """
     Count the number of occurence of tiles in a list of reference sequences.
     Construct a confusion matrix of index assignments if requested.
@@ -409,7 +411,7 @@ def fastar(seqs, ref, tile_len=6, bw=None):
     multiple occurences of a motif in the sequence. 
 
     Args:
-        pregions (list[str]): list of sequence to search within.
+        seqs (list[str]): list of sequence to search within.
         ref (str): reference sequence.
         tile_len (int): size of tile for sliding window.
         bw (float): bandwidth for kernel density estimation.
@@ -471,22 +473,24 @@ def fastar(seqs, ref, tile_len=6, bw=None):
 def barcoat(seqs, preset="BBA", barcode_construct=None, alinger=None):
     """
     Aligns sequences to a barcode construct using a preset or custom aligner.
-    Parameters:
-    seqs (list of str): List of sequences to be aligned.
-    preset (str, optional): Preset configuration for barcode construct and aligner.
-                            Options are "BBA", "DDC", or None. Default is "BBA".
-    barcode_construct (Bio.Seq.Seq, optional): Custom barcode construct sequence.
-                                               Required if preset is None.
-    aligner (Bio.Align.PairwiseAligner, optional): Custom aligner object.
-                                                   Required if preset is None.
+    Args:
+        seqs (list of str): List of sequences to be aligned.
+        preset (str, optional): Preset configuration for barcode construct and aligner.
+        Options are "BBA", "DDC", or None. Default is "BBA".
+        barcode_construct (Bio.Seq.Seq, optional): Custom barcode construct sequence.
+        Required if preset is None.
+        aligner (Bio.Align.PairwiseAligner, optional): Custom aligner object.
+        Required if preset is None.
+
     Returns:
-    tuple: A tuple containing:
-        - barcode (numpy.ndarray): Array of aligned barcode sequences.
-        - position (numpy.ndarray): Array of starting positions of alignments.
-        - length (numpy.ndarray): Array of lengths of alignments.
-        - score (numpy.ndarray): Array of alignment scores.
+        barcode (numpy.ndarray): Array of aligned barcode sequences.
+        position (numpy.ndarray): Array of starting positions of alignments.
+        length (numpy.ndarray): Array of lengths of alignments.
+        score (numpy.ndarray): Array of alignment scores.
+
     Raises:
     ValueError: If preset is None and either barcode_construct or aligner is not provided.
+
     Example:
     ```
     >>> from Bio.Seq import Seq
