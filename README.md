@@ -3,6 +3,8 @@
 <!-- TODO: add link to preprint/journal -->
 Manuscript available soon!
 
+## Algorithm Overview
+
 ![abstract](./pipeline.png)
 
 `wimpy` (What’s In My Pot, Y’all) is a software package that can analyze large-scale pooled libraries of synthetic DNA. The implementation is available in both Python and MATLAB, depending on the user’s preferred programming language.
@@ -90,18 +92,6 @@ pip install -e .
 ## Using WIMPY
 
 Checkout our example scripts [`example_script_python.ipynb`](./wimpy_python/example_script_python.ipynb) or [`example_live_script_matlab.mlx`](./WIMPY/wimpy_matlab/) for a detailed walkthrough on how to use `wimpy` to process sequencing files with data from [Ultra-high throughput mapping of genetic design space](https://www.biorxiv.org/content/10.1101/2023.03.16.532704v2).
-
-## Algorithm Overview
-
-ONE LINE OVERVIEW OF INTRODUCTION REWRITE LATER DO NOT FORGET
-
-List all the functions
-
-### `function`
-
-simplified discription (one line)
-
-for all the functions
 
 ## Example Usage and Parameter Selection
 
