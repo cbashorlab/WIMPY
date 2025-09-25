@@ -90,7 +90,9 @@ def to_tiles(seq: str, tile_len: int = 10):
     return np.array([seq[i : i + tile_len] for i in range(len(seq) - tile_len + 1)])
 
 
-def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
+def bowtile(
+    seqs, ref, thresh=0.03, tile_len=10, max_len=100, circular_index=True, verbose=False
+):
     """
     use containment search of the fragmented tiles of the reference sequence
     to determine the occurence of a sequence in a list of reads
@@ -162,12 +164,14 @@ def bowtile(seqs, ref, thresh=0.03, tile_len=10, max_len=100, verbose=False):
 
         # foward strand
         if diff_num_match > thresh:
-            new_seq.append(seq[pos_f:] + seq[:pos_f])
+            reindexed_seq = seq[pos_f:] + seq[:pos_f] if circular_index else seq[pos_f:]
+            new_seq.append(reindexed_seq)
             right_seq.append(seq)
             flip.append(0)
         # reverse strand
         elif diff_num_match < -thresh:
-            new_seq.append(rev_comp(seq[pos_r:] + seq[:pos_r]))
+            reindexed_seq = seq[pos_r:] + seq[:pos_r] if circular_index else seq[:pos_r]
+            new_seq.append(rev_comp(reindexed_seq))
             right_seq.append(rev_comp(seq))
             flip.append(1)
         # tiling failed
@@ -343,7 +347,6 @@ def chophat(seqs, positions, end_positions=None, max_length=None, retain=True):
 def viscount(
     seqs, ref_seqs, thresh, return_confusion_matrix=True, tile_len=10, verbose=False
 ):
-    
     """
     Count the number of occurence of tiles in a list of reference sequences.
     Construct a confusion matrix of index assignments if requested.
@@ -407,8 +410,8 @@ def viscount(
 def fastar(seqs, ref, tile_len=6, bw=None):
     #! not final, to be updated after matlab script update
     """
-    Uses kernel density estimation to determine the occurence, or 
-    multiple occurences of a motif in the sequence. 
+    Uses kernel density estimation to determine the occurence, or
+    multiple occurences of a motif in the sequence.
 
     Args:
         seqs (list[str]): list of sequence to search within.
